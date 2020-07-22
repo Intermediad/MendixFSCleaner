@@ -1,6 +1,7 @@
 package com.intermediad;
 
 import java.io.BufferedWriter;
+import java.io.Console;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -48,6 +49,26 @@ public class MendixFSCleaner {
 					.walk(Paths.get(config.getPath()))
 			        .filter(Files::isRegularFile)
 			        .count();
+			
+			if (config.getDelete()) {				
+				Console console = System.console();
+				boolean confirmDelete = false;
+				
+				System.out.println("Found a total of " + totalFiles + " files.\n");
+				
+				while (!confirmDelete) {
+					String answer = new String(console.readLine("> Are you sure you want to delete orphaned files? (Y/N) "));
+					if (answer.toUpperCase().equalsIgnoreCase("Y")) {
+						confirmDelete = true;
+						System.out.println();
+					} else if (answer.toUpperCase().equalsIgnoreCase("N")) {
+						System.out.println("Cleanup cancelled\n");
+						return;
+					} else {
+						System.out.print('\r');
+					}
+				}		        
+			}			
 						
 		    for (Path path : (Iterable<Path>) pathStream::iterator) {
 		    	if (checkFileInDB(conn, path)) {

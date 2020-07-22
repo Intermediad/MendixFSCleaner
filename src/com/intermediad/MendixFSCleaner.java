@@ -75,7 +75,8 @@ public class MendixFSCleaner {
 		    		foundDBFiles++;
 		    	} else {
 		    		missingDBFiles++;
-		    		if (!writeFileToLog(path)) return;
+		    		String filename = path.getParent().getFileName() + "/" + path.getParent().getParent().getFileName() + "/" + path.getFileName();
+		    		if (!writeFileToLog(filename)) return;		    		
 		    		File file = path.toFile();
 		    		fileSize += file.length();
 		    		
@@ -90,6 +91,8 @@ public class MendixFSCleaner {
 		    		System.out.printf("Processed %6d of %6d files", processedFiles, totalFiles);
 		    	}
 		    }
+		    
+		    if (missingDBFiles == 0) writeFileToLog("No missing file associations found");
 		    if (writer != null) writer.close();
 		    
 		    System.out.print('\r');
@@ -150,15 +153,15 @@ public class MendixFSCleaner {
 		return conn;
 	}
 	
-	public static boolean writeFileToLog(Path path) {
+	public static boolean writeFileToLog(String filename) {
 		// open logfile if enabled				
 		if (config.getLog()) {
 			// initate log if enabled
 			try {
 				if (writer == null) {
-					writer = new BufferedWriter(new FileWriter("missing_files.log", true));
+					writer = new BufferedWriter(new FileWriter("missing_files.log"));
 				}
-				writer.write(path.getParent().getFileName() + "/" + path.getParent().getParent().getFileName() + "/" + path.getFileName() + '\n');
+				writer.write(filename + "\n");
 			} catch (IOException ioe) {
 				System.out.println("Error occurred while trying to write to logfile: " + ioe.getMessage());
 				return false;

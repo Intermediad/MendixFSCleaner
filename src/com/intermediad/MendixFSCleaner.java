@@ -14,15 +14,35 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 public class MendixFSCleaner {
 	
-	private static final String FILECHECK_SQL = "SELECT id FROM system$filedocument WHERE __uuid__ = ?";
+	private static final String FILECHECK_SQL = "SELECT id FROM system$filedocument WHERE ";
 	private static Config config;
 	private static BufferedWriter writer = null;
+	private static Pattern numberPattern = Pattern.compile("-?\\d+(\\.\\d+)?");
 	
 	public static void main(String[] args) {
+		
+		try {
+			new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
+		} catch (Exception e) {}
+		
+		System.out.println("Starting MendixFSCleaner 1.1.0 - 2020-07-24 13:56\n");
+		
+		// check for elevated permissions
+		try {
+			File adminFile = new File(System.getenv("programfiles")+"/test.tst");
+			boolean isAdmin = adminFile.createNewFile();
+			if (isAdmin) {
+				adminFile.delete();
+			}
+		} catch (IOException ioe) {
+			System.out.println("Please run in command prompt with elevated permissions. \n\nUse: Start > Run > Command prompt (right click 'Run as Administrator')");
+			return;
+		}
 		
 		// check commandline args
 		config = new Config(args);		
@@ -78,8 +98,7 @@ public class MendixFSCleaner {
 		    		String filename = path.getParent().getFileName() + "/" + path.getParent().getParent().getFileName() + "/" + path.getFileName();
 		    		if (!writeFileToLog(filename)) return;		    		
 		    		File file = path.toFile();
-		    		fileSize += file.length();
-		    		
+		    		fileSize += file.length();		    		
 		    		// delete file if enabled
 		    		if (config.getDelete()) {
 		    			file.delete();
@@ -121,10 +140,25 @@ public class MendixFSCleaner {
 	
 	public static boolean checkFileInDB(Connection conn, Path path) {
 		String filename = path.getFileName().toString();
-		boolean result = false;
+		boolean result = false;		
+		int fileId = -1;		
+		String sql = FILECHECK_SQL;
 		
-		try (PreparedStatement stmt = conn.prepareStatement(FILECHECK_SQL)) {		
-			stmt.setString(1, filename);
+		if (isNumeric(filename)) {
+			fileId = Integer.parseInt(filename);
+			sql += "fileid = ?";
+		} else {
+			sql += "__uuid__ = ?";
+		}
+		
+		try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+			
+			if (fileId != -1) {
+				stmt.setInt(1, fileId);
+			} else {
+				stmt.setString(1, filename);
+			}
+			
 			ResultSet resultSet = stmt.executeQuery();
 			
 			result = resultSet.next();
@@ -149,7 +183,7 @@ public class MendixFSCleaner {
 		} catch (Exception e) {
 			System.out.println("Eror while trying to connect to database: " + e.getMessage());
 		}
-		
+				
 		return conn;
 	}
 	
@@ -182,6 +216,13 @@ public class MendixFSCleaner {
         }
         
         return false;
+	}
+	
+	public static boolean isNumeric(String strNum) {
+	    if (strNum == null) {
+	        return false; 
+	    }
+	    return numberPattern.matcher(strNum).matches();
 	}
 }
 

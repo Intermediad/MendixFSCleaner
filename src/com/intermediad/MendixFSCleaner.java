@@ -30,7 +30,7 @@ public class MendixFSCleaner {
 			new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
 		} catch (Exception e) {}
 		
-		System.out.println("Starting MendixFSCleaner 1.1.0 - 2020-07-24 13:56\n");
+		System.out.println("Starting MendixFSCleaner 1.2.0 - 2020-08-22 15:06\n");
 		
 		// check for elevated permissions
 		try {

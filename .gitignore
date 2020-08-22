@@ -62,4 +62,5 @@ classes/
 
 # IntelliJ IDEA specific
 .idea
-.iml
+*.iml
+*.MF

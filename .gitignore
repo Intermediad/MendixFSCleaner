@@ -9,6 +9,7 @@ local.properties
 .settings/
 .loadpath
 .recommenders
+classes/
 
 # External tool builders
 .externalToolBuilders/
@@ -58,3 +59,7 @@ local.properties
 # Uncomment this line if you wish to ignore the project description file.
 # Typically, this file would be tracked if it contains build/dependency configurations:
 #.project
+
+# IntelliJ IDEA specific
+.idea
+.iml

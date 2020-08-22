@@ -150,6 +150,13 @@ public class MendixFSCleaner {
 		} else {
 			sql += "__uuid__ = ?";
 		}
+		try {
+			if (conn.isClosed()) {
+				conn = getDbConnection();
+			}
+		} catch (Exception e) {
+			System.out.println("Could not re-create connection");
+		}
 		
 		try (PreparedStatement stmt = conn.prepareStatement(sql)) {
 			
